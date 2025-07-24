@@ -1,289 +1,248 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Preço Fácil - Compare preços em tempo real</title>
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f9fafb;
-        }
-        .app-container {
-            max-width: 428px;
-            margin: 0 auto;
-            background: white;
-            min-height: 100vh;
-            position: relative;
-        }
-    </style>
-</head>
-<body>
-    <div id="root"></div>
+import React, { useState } from 'react';
+import { Search, MapPin, Upload, TrendingUp, ShoppingCart, Star, Clock, DollarSign } from 'lucide-react';
 
-    <script type="text/babel">
-        const { useState } = React;
-        const { Search, MapPin, Upload, TrendingUp, ShoppingCart, Star, Clock, DollarSign } = lucide;
+const PrecoFacilApp = () => {
+  const [activeTab, setActiveTab] = useState('buscar');
+  const [searchTerm, setSearchTerm] = useState('');
 
-        const PrecoFacilApp = () => {
-            const [activeTab, setActiveTab] = useState('buscar');
-            const [searchTerm, setSearchTerm] = useState('');
+  // Dados simulados
+  const produtos = [
+    {
+      id: 1,
+      nome: "Coca Cola 2L",
+      menor_preco: 8.99,
+      estabelecimentos: [
+        { nome: "Atacadão Centro", preco: 8.99, distancia: "1.2km", ultima_atualizacao: "2h atrás" },
+        { nome: "Extra Hiper", preco: 9.45, distancia: "2.1km", ultima_atualizacao: "4h atrás" },
+        { nome: "Carrefour", preco: 10.20, distancia: "0.8km", ultima_atualizacao: "1h atrás" }
+      ],
+      meu_historico: [
+        { data: "15/07", preco: 9.20, local: "Extra Hiper" },
+        { data: "10/07", preco: 8.80, local: "Atacadão Centro" }
+      ]
+    },
+    {
+      id: 2,
+      nome: "Óleo de Soja 900ml",
+      menor_preco: 4.25,
+      estabelecimentos: [
+        { nome: "Atacadão Centro", preco: 4.25, distancia: "1.2km", ultima_atualizacao: "1h atrás" },
+        { nome: "Extra Hiper", preco: 4.89, distancia: "2.1km", ultima_atualizacao: "3h atrás" }
+      ],
+      meu_historico: [
+        { data: "12/07", preco: 4.50, local: "Extra Hiper" }
+      ]
+    }
+  ];
 
-            // Dados simulados
-            const produtos = [
-                {
-                    id: 1,
-                    nome: "Picanha Friboi Peça Inteira (kg)",
-                    menor_preco: 89.90,
-                    estabelecimentos: [
-                        { nome: "Assaí Pistão Sul", preco: 89.90, distancia: "2.4km", ultima_atualizacao: "1h atrás" },
-                        { nome: "Assaí Ceilândia", preco: 92.45, distancia: "15.2km", ultima_atualizacao: "3h atrás" },
-                        { nome: "Atacadão Ceilândia", preco: 95.80, distancia: "14.8km", ultima_atualizacao: "2h atrás" }
-                    ],
-                    meu_historico: [
-                        { data: "18/07", preco: 88.50, local: "Assaí Pistão Sul" },
-                        { data: "12/07", preco: 91.20, local: "Assaí Ceilândia" }
-                    ]
-                },
-                {
-                    id: 2,
-                    nome: "Alcatra Bovina (kg)",
-                    menor_preco: 45.90,
-                    estabelecimentos: [
-                        { nome: "Assaí Ceilândia", preco: 45.90, distancia: "15.2km", ultima_atualizacao: "2h atrás" },
-                        { nome: "Assaí Pistão Sul", preco: 47.80, distancia: "2.4km", ultima_atualizacao: "4h atrás" },
-                        { nome: "Atacadão Ceilândia", preco: 49.90, distancia: "14.8km", ultima_atualizacao: "1h atrás" }
-                    ],
-                    meu_historico: [
-                        { data: "16/07", preco: 46.50, local: "Assaí Pistão Sul" },
-                        { data: "09/07", preco: 48.90, local: "Atacadão Ceilândia" }
-                    ]
-                },
-                {
-                    id: 3,
-                    nome: "Contrafilé Bovino (kg)",
-                    menor_preco: 52.90,
-                    estabelecimentos: [
-                        { nome: "Assaí Pistão Sul", preco: 52.90, distancia: "2.4km", ultima_atualizacao: "30min atrás" },
-                        { nome: "Assaí Ceilândia", preco: 54.80, distancia: "15.2km", ultima_atualizacao: "2h atrás" }
-                    ],
-                    meu_historico: [
-                        { data: "14/07", preco: 53.50, local: "Assaí Pistão Sul" }
-                    ]
-                }
-            ];
+  const produtosFiltrados = produtos.filter(produto => 
+    produto.nome.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-            const produtosFiltrados = produtos.filter(produto => 
-                produto.nome.toLowerCase().includes(searchTerm.toLowerCase())
-            );
+  const TabButton = ({ id, label, icon: Icon, active }) => (
+    <button
+      onClick={() => setActiveTab(id)}
+      className={`flex flex-col items-center p-3 rounded-lg transition-all ${
+        active ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+      }`}
+    >
+      <Icon size={20} />
+      <span className="text-xs mt-1">{label}</span>
+    </button>
+  );
 
-            const TabButton = ({ id, label, icon: Icon, active }) => (
-                React.createElement('button', {
-                    onClick: () => setActiveTab(id),
-                    className: `flex flex-col items-center p-3 rounded-lg transition-all ${
-                        active ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                    }`
-                }, [
-                    React.createElement(Icon, { size: 20, key: 'icon' }),
-                    React.createElement('span', { className: "text-xs mt-1", key: 'label' }, label)
-                ])
-            );
+  const BuscarTab = () => (
+    <div className="space-y-4">
+      <div className="relative">
+        <Search className="absolute left-3 top-3 text-gray-400" size={20} />
+        <input
+          type="text"
+          placeholder="Buscar produto (ex: Coca Cola, Óleo...)"
+          className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
 
-            const BuscarTab = () => (
-                React.createElement('div', { className: "space-y-4" }, [
-                    React.createElement('div', { className: "relative", key: 'search' }, [
-                        React.createElement(Search, { className: "absolute left-3 top-3 text-gray-400", size: 20, key: 'search-icon' }),
-                        React.createElement('input', {
-                            type: "text",
-                            placeholder: "Buscar produto (ex: Picanha, Alcatra, Contrafilé...)",
-                            className: "w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent",
-                            value: searchTerm,
-                            onChange: (e) => setSearchTerm(e.target.value),
-                            key: 'search-input'
-                        })
-                    ]),
-                    React.createElement('div', { className: "flex items-center gap-2 text-sm text-gray-600", key: 'location' }, [
-                        React.createElement(MapPin, { size: 16, key: 'map-icon' }),
-                        React.createElement('span', { key: 'location-text' }, 'Mostrando produtos num raio de 5km - Brasília, DF')
-                    ]),
-                    React.createElement('div', { className: "space-y-4", key: 'products' }, [
-                        ...produtosFiltrados.map(produto => (
-                            React.createElement('div', { key: produto.id, className: "bg-white border border-gray-200 rounded-lg p-4 shadow-sm" }, [
-                                React.createElement('div', { className: "flex justify-between items-start mb-3", key: 'header' }, [
-                                    React.createElement('h3', { className: "font-semibold text-lg", key: 'title' }, produto.nome),
-                                    React.createElement('div', { className: "text-right", key: 'price' }, [
-                                        React.createElement('div', { className: "text-2xl font-bold text-green-600", key: 'price-value' }, `R$ ${produto.menor_preco.toFixed(2)}`),
-                                        React.createElement('div', { className: "text-xs text-gray-500", key: 'price-label' }, 'menor preço')
-                                    ])
-                                ]),
-                                React.createElement('div', { className: "space-y-2", key: 'establishments' }, [
-                                    ...produto.estabelecimentos.map((est, idx) => (
-                                        React.createElement('div', { 
-                                            key: idx, 
-                                            className: `flex justify-between items-center p-2 rounded ${
-                                                idx === 0 ? 'bg-green-50 border border-green-200' : 'bg-gray-50'
-                                            }`
-                                        }, [
-                                            React.createElement('div', { key: 'info' }, [
-                                                React.createElement('div', { className: "font-medium", key: 'name' }, est.nome),
-                                                React.createElement('div', { className: "text-sm text-gray-600 flex items-center gap-2", key: 'details' }, [
-                                                    React.createElement(MapPin, { size: 12, key: 'map' }),
-                                                    est.distancia,
-                                                    React.createElement(Clock, { size: 12, key: 'clock' }),
-                                                    est.ultima_atualizacao
-                                                ])
-                                            ]),
-                                            React.createElement('div', { 
-                                                className: `text-lg font-semibold ${
-                                                    idx === 0 ? 'text-green-600' : 'text-gray-800'
-                                                }`,
-                                                key: 'price'
-                                            }, `R$ ${est.preco.toFixed(2)}`)
-                                        ])
-                                    ))
-                                ]),
-                                React.createElement('div', { className: "mt-3 pt-3 border-t border-gray-200", key: 'history' }, [
-                                    React.createElement('div', { className: "text-sm text-gray-600 mb-2", key: 'history-title' }, '📊 Suas últimas compras:'),
-                                    React.createElement('div', { className: "flex gap-4 text-sm", key: 'history-items' }, [
-                                        ...produto.meu_historico.map((hist, idx) => (
-                                            React.createElement('div', { key: idx, className: "bg-blue-50 px-2 py-1 rounded" }, 
-                                                `${hist.data}: R$ ${hist.preco.toFixed(2)} (${hist.local})`
-                                            )
-                                        ))
-                                    ])
-                                ])
-                            ])
-                        ))
-                    ])
-                ])
-            );
+      <div className="flex items-center gap-2 text-sm text-gray-600">
+        <MapPin size={16} />
+        <span>Mostrando produtos num raio de 5km - Brasília, DF</span>
+      </div>
 
-            const NFTab = () => (
-                React.createElement('div', { className: "space-y-6" }, [
-                    React.createElement('div', { className: "text-center", key: 'header' }, [
-                        React.createElement(Upload, { size: 48, className: "mx-auto text-blue-600 mb-4", key: 'upload-icon' }),
-                        React.createElement('h2', { className: "text-xl font-semibold mb-2", key: 'title' }, 'Adicionar Nota Fiscal'),
-                        React.createElement('p', { className: "text-gray-600 mb-6", key: 'description' }, 
-                            'Ajude a comunidade mantendo os preços atualizados! Carregue sua NF eletrônica e automaticamente atualizaremos os preços.'
-                        )
-                    ]),
-                    React.createElement('div', { className: "border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-400 transition-colors cursor-pointer", key: 'upload-area' }, [
-                        React.createElement(Upload, { size: 32, className: "mx-auto text-gray-400 mb-3", key: 'upload-icon2' }),
-                        React.createElement('p', { className: "text-gray-600 mb-2", key: 'upload-text' }, 'Clique para enviar ou arraste sua NF aqui'),
-                        React.createElement('p', { className: "text-sm text-gray-500", key: 'formats' }, 'Formatos aceitos: XML, PDF, JPG, PNG')
-                    ]),
-                    React.createElement('div', { className: "bg-blue-50 border border-blue-200 rounded-lg p-4", key: 'how-it-works' }, [
-                        React.createElement('h3', { className: "font-semibold text-blue-800 mb-2", key: 'title' }, 'Como funciona:'),
-                        React.createElement('ul', { className: "text-sm text-blue-700 space-y-1", key: 'list' }, [
-                            React.createElement('li', { key: '1' }, '• Envie sua nota fiscal de compras'),
-                            React.createElement('li', { key: '2' }, '• Nosso sistema extrai automaticamente os produtos e preços'),
-                            React.createElement('li', { key: '3' }, '• Os dados são validados e adicionados ao banco de preços'),
-                            React.createElement('li', { key: '4' }, '• Você ganha pontos que podem ser trocados por descontos')
-                        ])
-                    ]),
-                    React.createElement('div', { className: "bg-green-50 border border-green-200 rounded-lg p-4", key: 'points' }, [
-                        React.createElement('div', { className: "flex items-center gap-2 mb-2", key: 'points-header' }, [
-                            React.createElement(Star, { className: "text-yellow-500", size: 20, key: 'star' }),
-                            React.createElement('span', { className: "font-semibold", key: 'points-text' }, 'Seus Pontos: 2,450')
-                        ]),
-                        React.createElement('p', { className: "text-sm text-green-700", key: 'points-description' }, 
-                            'Continue enviando NFs para ganhar mais pontos e trocar por benefícios!'
-                        )
-                    ])
-                ])
-            );
+      <div className="space-y-4">
+        {produtosFiltrados.map(produto => (
+          <div key={produto.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+            <div className="flex justify-between items-start mb-3">
+              <h3 className="font-semibold text-lg">{produto.nome}</h3>
+              <div className="text-right">
+                <div className="text-2xl font-bold text-green-600">R$ {produto.menor_preco.toFixed(2)}</div>
+                <div className="text-xs text-gray-500">menor preço</div>
+              </div>
+            </div>
 
-            const HistoricoTab = () => (
-                React.createElement('div', { className: "space-y-4" }, [
-                    React.createElement('h2', { className: "text-xl font-semibold flex items-center gap-2", key: 'title' }, [
-                        React.createElement(TrendingUp, { className: "text-blue-600", key: 'icon' }),
-                        'Histórico de Compras'
-                    ]),
-                    React.createElement('div', { className: "bg-white border border-gray-200 rounded-lg p-4", key: 'history' }, [
-                        React.createElement('h3', { className: "font-semibold mb-3", key: 'subtitle' }, 'Últimas 30 dias'),
-                        React.createElement('div', { className: "space-y-3", key: 'purchases' }, [
-                            React.createElement('div', { className: "flex justify-between items-center p-3 bg-gray-50 rounded", key: 'purchase1' }, [
-                                React.createElement('div', { key: 'info1' }, [
-                                    React.createElement('div', { className: "font-medium", key: 'name1' }, 'Compra no Assaí Pistão Sul'),
-                                    React.createElement('div', { className: "text-sm text-gray-600", key: 'details1' }, '18/07/2025 - 8 itens de carnes')
-                                ]),
-                                React.createElement('div', { className: "text-right", key: 'price1' }, [
-                                    React.createElement('div', { className: "font-semibold", key: 'value1' }, 'R$ 1.247,80'),
-                                    React.createElement('div', { className: "text-xs text-green-600", key: 'savings1' }, '↓ 12% vs média')
-                                ])
-                            ]),
-                            React.createElement('div', { className: "flex justify-between items-center p-3 bg-gray-50 rounded", key: 'purchase2' }, [
-                                React.createElement('div', { key: 'info2' }, [
-                                    React.createElement('div', { className: "font-medium", key: 'name2' }, 'Compra no Assaí Ceilândia'),
-                                    React.createElement('div', { className: "text-sm text-gray-600", key: 'details2' }, '12/07/2025 - 15 itens')
-                                ]),
-                                React.createElement('div', { className: "text-right", key: 'price2' }, [
-                                    React.createElement('div', { className: "font-semibold", key: 'value2' }, 'R$ 2.189,45'),
-                                    React.createElement('div', { className: "text-xs text-red-600", key: 'increase2' }, '↑ 6% vs média')
-                                ])
-                            ])
-                        ])
-                    ]),
-                    React.createElement('div', { className: "bg-blue-50 border border-blue-200 rounded-lg p-4", key: 'insights' }, [
-                        React.createElement('h3', { className: "font-semibold text-blue-800 mb-2", key: 'insights-title' }, 'Insights das suas compras:'),
-                        React.createElement('ul', { className: "text-sm text-blue-700 space-y-1", key: 'insights-list' }, [
-                            React.createElement('li', { key: '1' }, '• Você economiza em média R$ 156 por compra usando o app'),
-                            React.createElement('li', { key: '2' }, '• Assaí Pistão Sul oferece os melhores preços para 65% das suas carnes'),
-                            React.createElement('li', { key: '3' }, '• Picanha Friboi: melhor dia para comprar é quinta-feira'),
-                            React.createElement('li', { key: '4' }, '• Alcatra: preço mais baixo entre 14h-16h nos fins de semana')
-                        ])
-                    ])
-                ])
-            );
+            <div className="space-y-2">
+              {produto.estabelecimentos.map((est, idx) => (
+                <div key={idx} className={`flex justify-between items-center p-2 rounded ${
+                  idx === 0 ? 'bg-green-50 border border-green-200' : 'bg-gray-50'
+                }`}>
+                  <div>
+                    <div className="font-medium">{est.nome}</div>
+                    <div className="text-sm text-gray-600 flex items-center gap-2">
+                      <MapPin size={12} />
+                      {est.distancia}
+                      <Clock size={12} />
+                      {est.ultima_atualizacao}
+                    </div>
+                  </div>
+                  <div className={`text-lg font-semibold ${
+                    idx === 0 ? 'text-green-600' : 'text-gray-800'
+                  }`}>
+                    R$ {est.preco.toFixed(2)}
+                  </div>
+                </div>
+              ))}
+            </div>
 
-            return React.createElement('div', { className: "app-container" }, [
-                // Header
-                React.createElement('div', { className: "bg-blue-600 text-white p-4", key: 'header' }, [
-                    React.createElement('h1', { className: "text-xl font-bold", key: 'title' }, 'Preço Fácil'),
-                    React.createElement('p', { className: "text-blue-100 text-sm", key: 'subtitle' }, 'Compare preços em tempo real')
-                ]),
+            <div className="mt-3 pt-3 border-t border-gray-200">
+              <div className="text-sm text-gray-600 mb-2">📊 Suas últimas compras:</div>
+              <div className="flex gap-4 text-sm">
+                {produto.meu_historico.map((hist, idx) => (
+                  <div key={idx} className="bg-blue-50 px-2 py-1 rounded">
+                    {hist.data}: R$ {hist.preco.toFixed(2)} ({hist.local})
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 
-                // Content
-                React.createElement('div', { className: "p-4 pb-20", key: 'content' }, [
-                    activeTab === 'buscar' && BuscarTab(),
-                    activeTab === 'nf' && NFTab(),
-                    activeTab === 'historico' && HistoricoTab()
-                ]),
+  const NFTab = () => (
+    <div className="space-y-6">
+      <div className="text-center">
+        <Upload size={48} className="mx-auto text-blue-600 mb-4" />
+        <h2 className="text-xl font-semibold mb-2">Adicionar Nota Fiscal</h2>
+        <p className="text-gray-600 mb-6">
+          Ajude a comunidade mantendo os preços atualizados! 
+          Carregue sua NF eletrônica e automaticamente atualizaremos os preços.
+        </p>
+      </div>
 
-                // Bottom Navigation
-                React.createElement('div', { className: "fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-md bg-white border-t border-gray-200 p-4", key: 'bottom-nav' }, [
-                    React.createElement('div', { className: "flex justify-around", key: 'nav-buttons' }, [
-                        TabButton({ 
-                            id: "buscar", 
-                            label: "Buscar", 
-                            icon: Search, 
-                            active: activeTab === 'buscar' 
-                        }),
-                        TabButton({ 
-                            id: "nf", 
-                            label: "Adicionar NF", 
-                            icon: Upload, 
-                            active: activeTab === 'nf' 
-                        }),
-                        TabButton({ 
-                            id: "historico", 
-                            label: "Histórico", 
-                            icon: ShoppingCart, 
-                            active: activeTab === 'historico' 
-                        })
-                    ])
-                ])
-            ]);
-        };
+      <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-400 transition-colors cursor-pointer">
+        <Upload size={32} className="mx-auto text-gray-400 mb-3" />
+        <p className="text-gray-600 mb-2">Clique para enviar ou arraste sua NF aqui</p>
+        <p className="text-sm text-gray-500">Formatos aceitos: XML, PDF, JPG, PNG</p>
+      </div>
 
-        ReactDOM.render(React.createElement(PrecoFacilApp), document.getElementById('root'));
-    </script>
-</body>
-</html>
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <h3 className="font-semibold text-blue-800 mb-2">Como funciona:</h3>
+        <ul className="text-sm text-blue-700 space-y-1">
+          <li>• Envie sua nota fiscal de compras</li>
+          <li>• Nosso sistema extrai automaticamente os produtos e preços</li>
+          <li>• Os dados são validados e adicionados ao banco de preços</li>
+          <li>• Você ganha pontos que podem ser trocados por descontos</li>
+        </ul>
+      </div>
+
+      <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+        <div className="flex items-center gap-2 mb-2">
+          <Star className="text-yellow-500" size={20} />
+          <span className="font-semibold">Seus Pontos: 2,450</span>
+        </div>
+        <p className="text-sm text-green-700">
+          Continue enviando NFs para ganhar mais pontos e trocar por benefícios!
+        </p>
+      </div>
+    </div>
+  );
+
+  const HistoricoTab = () => (
+    <div className="space-y-4">
+      <h2 className="text-xl font-semibold flex items-center gap-2">
+        <TrendingUp className="text-blue-600" />
+        Histórico de Compras
+      </h2>
+
+      <div className="bg-white border border-gray-200 rounded-lg p-4">
+        <h3 className="font-semibold mb-3">Últimas 30 dias</h3>
+        <div className="space-y-3">
+          <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
+            <div>
+              <div className="font-medium">Compra no Atacadão Centro</div>
+              <div className="text-sm text-gray-600">15/07/2025 - 23 itens</div>
+            </div>
+            <div className="text-right">
+              <div className="font-semibold">R$ 342,80</div>
+              <div className="text-xs text-green-600">↓ 8% vs média</div>
+            </div>
+          </div>
+
+          <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
+            <div>
+              <div className="font-medium">Compra no Extra Hiper</div>
+              <div className="text-sm text-gray-600">10/07/2025 - 18 itens</div>
+            </div>
+            <div className="text-right">
+              <div className="font-semibold">R$ 289,45</div>
+              <div className="text-xs text-red-600">↑ 12% vs média</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <h3 className="font-semibold text-blue-800 mb-2">Insights das suas compras:</h3>
+        <ul className="text-sm text-blue-700 space-y-1">
+          <li>• Você economiza em média R$ 45 por compra usando o app</li>
+          <li>• Atacadão Centro oferece os melhores preços para 78% dos seus produtos</li>
+          <li>• Coca Cola 2L: melhor dia para comprar é terça-feira</li>
+        </ul>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="max-w-md mx-auto bg-gray-50 min-h-screen">
+      {/* Header */}
+      <div className="bg-blue-600 text-white p-4">
+        <h1 className="text-xl font-bold">Preço Fácil</h1>
+        <p className="text-blue-100 text-sm">Compare preços em tempo real</p>
+      </div>
+
+      {/* Content */}
+      <div className="p-4 pb-20">
+        {activeTab === 'buscar' && <BuscarTab />}
+        {activeTab === 'nf' && <NFTab />}
+        {activeTab === 'historico' && <HistoricoTab />}
+      </div>
+
+      {/* Bottom Navigation */}
+      <div className="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-md bg-white border-t border-gray-200 p-4">
+        <div className="flex justify-around">
+          <TabButton 
+            id="buscar" 
+            label="Buscar" 
+            icon={Search} 
+            active={activeTab === 'buscar'} 
+          />
+          <TabButton 
+            id="nf" 
+            label="Adicionar NF" 
+            icon={Upload} 
+            active={activeTab === 'nf'} 
+          />
+          <TabButton 
+            id="historico" 
+            label="Histórico" 
+            icon={ShoppingCart} 
+            active={activeTab === 'historico'} 
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default PrecoFacilApp;
